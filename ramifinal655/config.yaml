@@ -1,0 +1,25 @@
+# LLDP IDS Configuration
+# Simple YAML config for runtime parameters
+
+model:
+  path: "mlmodel/02_Training/lldp_rf_model.pkl"
+
+detection:
+  enabled_classes: ["flood", "replay", "spoofed"]
+  expected_ttl: 120
+  ttl_tolerance: 10
+  window_sec: 10
+  max_flows: 10000
+
+mitigation:
+  drop_flow_idle_sec: 30
+  drop_flow_hard_sec: 60
+
+logging:
+  file: "lldp_ids_alerts.log"
+  level: "INFO"
+  rotate_mb: 10
+  backups: 3
+
+controller:
+  observe_links: true

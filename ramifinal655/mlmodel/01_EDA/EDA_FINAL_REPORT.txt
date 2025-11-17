@@ -1,0 +1,67 @@
+================================================================================
+IMPROVED LLDP FLOW-BASED IDS - FINAL EDA REPORT
+================================================================================
+
+Dataset: c:\Users\User\Desktop\ramonzo\FINAL_LLDP_DATASET_COMPLETE_enriched.csv
+Date: 2025-11-05 11:33:08
+
+1. DATA CLEANING SUMMARY
+--------------------------------------------------------------------------------
+  Original rows: 108,297
+  Duplicates removed: 98,467
+  Final rows: 9,830
+
+2. FEATURE SELECTION SUMMARY
+--------------------------------------------------------------------------------
+  Initial features: 11
+  Final features: 5
+
+  Removed due to high missing data (>50%):
+    - packet_rate_inst     (75.3% missing)
+    - burstiness_cv        (52.1% missing)
+    - size_z_src           (100.0% missing)
+
+  Removed due to zero variance:
+    - is_lldp_mc
+
+  Removed due to high correlation:
+    - packet_rate          (corr with packet_rate_win: +0.890)
+    - time_delta           (corr with packet_rate_win: +0.888)
+
+3. FINAL FEATURE SET
+--------------------------------------------------------------------------------
+   1. packet_rate_win
+   2. age_since_first
+   3. tlv_density
+   4. ttl_dev
+   5. ttl_anom_flag
+
+4. CLASS DISTRIBUTION
+--------------------------------------------------------------------------------
+  normal              :  4,522 ( 46.00%)
+  replay              :  2,308 ( 23.48%)
+  flood               :  1,174 ( 11.94%)
+  spoofed             :    800 (  8.14%)
+  ttl_anomaly         :    600 (  6.10%)
+  malformed           :    426 (  4.33%)
+  Imbalance ratio: 10.62:1
+
+5. FEATURE STATISTICS
+--------------------------------------------------------------------------------
+                  count      mean        std         min       25%           50%        75%         max   skewness    kurtosis
+packet_rate_win  9830.0  8.535819   8.997564    0.033333  0.033333  9.466667e+00  11.300000   25.400000   0.866959   -0.490207
+age_since_first  9830.0  0.000006   0.000031    0.000000  0.000000  3.000000e-08   0.000001    0.000603  17.903361  344.542127
+tlv_density      9830.0  0.088094   0.007169    0.083333  0.083333  8.333333e-02   0.093750    0.100000   0.915509   -1.048627
+ttl_dev          9830.0 -1.799491  17.634791 -120.000000  0.000000  0.000000e+00   0.000000  115.000000  -1.477656   17.587136
+ttl_anom_flag    9830.0  0.098067   0.297421    0.000000  0.000000  0.000000e+00   0.000000    1.000000   2.703342    5.309136
+
+6. NEXT STEPS
+--------------------------------------------------------------------------------
+  1. Load LLDP_ML_READY_FINAL.csv
+  2. Split data (stratified 80/20)
+  3. Train Random Forest with class_weight='balanced'
+  4. Evaluate with F1-score, TPR, FPR, ROC-AUC
+  5. Tune hyperparameters if needed
+  6. Serialize model for Ryu controller
+
+================================================================================

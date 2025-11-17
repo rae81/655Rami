@@ -1,0 +1,93 @@
+================================================================================
+LLDP FLOW-BASED IDS - MODEL EVALUATION REPORT
+================================================================================
+
+Generated: 2025-11-05 11:55:58
+Model: Random Forest Classifier
+Dataset: c:\Users\User\Desktop\ramonzo\LLDP_ML_READY_FINAL.csv
+
+1. DATASET SUMMARY
+--------------------------------------------------------------------------------
+  Total samples: 9,830
+  Features: 5
+  Classes: 6
+  Train/Test split: 80/20 (stratified)
+  Training samples: 7,864
+  Test samples: 1,966
+
+2. MODEL CONFIGURATION
+--------------------------------------------------------------------------------
+  Algorithm: Random Forest
+  n_estimators: 100
+  class_weight: balanced
+  Training time: 0.12 seconds
+
+3. ACCURACY METRICS
+--------------------------------------------------------------------------------
+  Training Accuracy: 0.8054
+  Test Accuracy:     0.7920
+  Overfitting gap:   0.0135
+
+4. F1-SCORE METRICS
+--------------------------------------------------------------------------------
+  F1-Score (Macro):    0.6919
+  F1-Score (Weighted): 0.8179
+  F1-Score (Micro):    0.7920
+
+  Per-Class F1-Scores:
+    flood          : 1.0000
+    malformed      : 0.0000
+    normal         : 0.7817
+    replay         : 1.0000
+    spoofed        : 1.0000
+    ttl_anomaly    : 0.3698
+
+5. FALSE POSITIVE RATE (FPR)
+--------------------------------------------------------------------------------
+  flood          : 0.0000 (0.00%)
+  malformed      : 0.0000 (0.00%)
+  normal         : 0.0000 (0.00%)
+  replay         : 0.0000 (0.00%)
+  spoofed        : 0.0000 (0.00%)
+  ttl_anomaly    : 0.2216 (22.16%)
+  Average FPR: 0.0369
+
+6. DETECTION LATENCY
+--------------------------------------------------------------------------------
+  Mean:   17.2169 ms
+  Median: 17.0123 ms
+  95th percentile: 18.3489 ms
+  99th percentile: 19.4469 ms
+
+7. CONTROLLER OVERHEAD
+--------------------------------------------------------------------------------
+  Maximum Throughput: 59,963 events/second
+
+  Batch Processing Performance:
+    Batch    1: 17.328100 ms/event
+    Batch   10: 1.674380 ms/event
+    Batch   50: 0.364564 ms/event
+    Batch  100: 0.171810 ms/event
+    Batch  500: 0.034401 ms/event
+    Batch 1000: 0.016677 ms/event
+
+8. FEATURE IMPORTANCE
+--------------------------------------------------------------------------------
+  tlv_density         : 0.3963
+  age_since_first     : 0.2480
+  packet_rate_win     : 0.2365
+  ttl_anom_flag       : 0.0991
+  ttl_dev             : 0.0201
+
+9. CROSS-VALIDATION
+--------------------------------------------------------------------------------
+  Mean CV F1-Score: 0.6904 (±0.0062)
+
+10. MODEL FILES
+--------------------------------------------------------------------------------
+  Model: c:\Users\User\Desktop\ramonzo\lldp_rf_model.pkl
+  Size: 298.38 KB
+
+================================================================================
+END OF REPORT
+================================================================================
