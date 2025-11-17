@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# IDS runtime files
+*.log
+*.log.*
+events.jsonl
+mitigation_log.json
+stats.json
+
+# Attack toolkit outputs
+attack_*.pcap
+attack_meta.json
+captured.pcap
+
+# Benchmarking outputs
+runs/
+
+# OS
+.DS_Store
+Thumbs.db
