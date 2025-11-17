@@ -1,25 +1,43 @@
 # LLDP IDS Configuration
-# Simple YAML config for runtime parameters
+# Complete configuration for hybrid detection (rules + ML)
 
 model:
   path: "mlmodel/02_Training/lldp_rf_model.pkl"
 
 detection:
+  # ML-based attack classes to block (high-confidence detections only)
   enabled_classes: ["flood", "replay", "spoofed"]
+
+  # Feature extraction parameters
   expected_ttl: 120
   ttl_tolerance: 10
   window_sec: 10
   max_flows: 10000
+
+  # Rule-based validation (hybrid detection)
+  enable_rules: true
+  min_ttl: 5
+  max_ttl: 65535
+  max_burst_rate: 50  # packets per second threshold
+
+  # Topology baseline learning
+  learning_duration: 60  # seconds to learn normal topology
 
 mitigation:
   drop_flow_idle_sec: 30
   drop_flow_hard_sec: 60
 
 logging:
+  # Human-readable log
   file: "lldp_ids_alerts.log"
   level: "INFO"
   rotate_mb: 10
   backups: 3
+
+  # JSON logs for orchestrator and benchmarking
+  events_jsonl: "events.jsonl"
+  mitigation_json: "mitigation_log.json"
+  stats_json: "stats.json"
 
 controller:
   observe_links: true
