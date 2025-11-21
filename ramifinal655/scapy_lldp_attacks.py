@@ -348,7 +348,7 @@ Attack Modes:
   suite       - Run all attacks in sequence (ONE COMMAND for full demo!)
 
 Examples:
-  # Run ALL attacks automatically (perfect for demos!)
+  # Run ALL attacks automatically
   sudo python3 scapy_lldp_attacks.py --mode suite --iface eth0 --rate 50 --duration 60
 
   # Individual attacks
@@ -614,3 +614,4 @@ Advanced:
 
 if __name__ == "__main__":
     sys.exit(cli_main())
+
